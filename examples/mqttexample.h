@@ -27,6 +27,12 @@
 #endif
 
 /* Compatibility Options */
+#ifdef NUCLEUS
+    #define NO_MAIN_DRIVER
+    #define NO_EXIT
+    #define LINE_END	"\r\n"
+#endif
+
 #ifdef NO_EXIT
 	#undef exit
 	#define exit(rc) return rc
