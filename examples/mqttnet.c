@@ -353,7 +353,9 @@ static void sock_set_nonblocking(SOCKET_T* sockfd)
         PRINTF("fcntl set failed!");
 #endif
 }
+#endif /* !WOLFMQTT_NO_TIMEOUT && WOLFMQTT_NONBLOCK */
 
+#ifndef WOLFMQTT_NO_TIMEOUT
 static int sock_select(int nfds, fd_set *readfds, fd_set *writefds,
         fd_set *exceptfds, struct timeval *timeout)
 {
@@ -407,7 +409,7 @@ static int sock_select(int nfds, fd_set *readfds, fd_set *writefds,
 #endif /* NUCLEUS */
     return rc;
 }
-#endif /* !WOLFMQTT_NO_TIMEOUT && WOLFMQTT_NONBLOCK */
+#endif /* !WOLFMQTT_NO_TIMEOUT */
 
 static int sock_create(SOCKADDR_IN* addr, int type, int protocol)
 {
