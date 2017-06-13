@@ -108,6 +108,7 @@
     #endif /* CFG_NU_OS_SVCS_POSIX_ENABLE */
     #define WOLFMQTT_NO_TIMEOUT
     #define NO_SOCK_ERROR
+    #define SOCKET_INVALID  ((SOCKET_T)-1)
 
     #undef fd_set
     #undef FD_ZERO
@@ -352,7 +353,6 @@ static void sock_set_nonblocking(SOCKET_T* sockfd)
         PRINTF("fcntl set failed!");
 #endif
 }
-#endif /* !WOLFMQTT_NO_TIMEOUT && WOLFMQTT_NONBLOCK */
 
 static int sock_select(int nfds, fd_set *readfds, fd_set *writefds,
         fd_set *exceptfds, struct timeval *timeout)
@@ -395,6 +395,9 @@ static int sock_select(int nfds, fd_set *readfds, fd_set *writefds,
             }
             rc = 0;
         }
+        else if (rc == NU_NO_DATA) {
+            rc = MQTT_CODE_ERROR_TIMEOUT;
+        }
     }
     else {
         rc = 1; /* For compatibility return 1 on success */
@@ -404,6 +407,7 @@ static int sock_select(int nfds, fd_set *readfds, fd_set *writefds,
 #endif /* NUCLEUS */
     return rc;
 }
+#endif /* !WOLFMQTT_NO_TIMEOUT && WOLFMQTT_NONBLOCK */
 
 static int sock_create(SOCKADDR_IN* addr, int type, int protocol)
 {
@@ -440,7 +444,7 @@ static int NetConnect(void *context, const char* host, word16 port,
 
             /* Create socket */
             sock->fd = sock_create(&address, SOCK_STREAM, 0);
-            if (sock->fd == SOCKET_INVALID)
+            if (sock->fd <= SOCKET_INVALID)
                 goto exit;
 
             sock->stat = SOCK_CONN;
