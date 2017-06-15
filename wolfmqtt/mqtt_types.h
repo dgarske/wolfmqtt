@@ -121,6 +121,9 @@ enum MqttPacketResponseCodes {
     #ifndef XISALNUM
         #define XISALNUM(c)         isalnum((c))
     #endif
+    #ifndef XMEMCHR
+        #define XMEMCHR(s,c,n)      memchr((s),(c),(n))
+    #endif
     #ifndef XSNPRINTF
         #ifndef USE_WINDOWS_API
             #define XSNPRINTF        snprintf
@@ -167,6 +170,10 @@ enum MqttPacketResponseCodes {
 
 /* printf */
 #ifndef WOLFMQTT_CUSTOM_PRINTF
+    #ifdef MQTT_NUCLEUS
+        #define LINE_END    "\r\n"
+    #endif
+
     #ifndef LINE_END
         #define LINE_END    "\n"
     #endif

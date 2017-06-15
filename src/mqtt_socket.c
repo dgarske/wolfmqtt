@@ -258,6 +258,9 @@ int MqttSocket_Connect(MqttClient *client, const char* host, word16 port,
         if (rc < 0) {
             return rc;
         }
+        else {
+            rc = MQTT_CODE_SUCCESS;
+        }
         client->flags |= MQTT_CLIENT_FLAG_IS_CONNECTED;
     }
 

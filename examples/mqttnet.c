@@ -86,7 +86,7 @@
     #define FD_ISSET(f1, f2) (1==1)
 
 /* Nucleus */
-#elif defined(NUCLEUS)
+#elif defined(MQTT_NUCLEUS)
     #include "nucleus.h"
     #include "networking/nu_networking.h"
 
@@ -106,7 +106,6 @@
         #include "errno.h"
         #include "signal.h"
     #endif /* CFG_NU_OS_SVCS_POSIX_ENABLE */
-    #define WOLFMQTT_NO_TIMEOUT
     #define NO_SOCK_ERROR
     #define SOCKET_INVALID  ((SOCKET_T)-1)
 
@@ -206,7 +205,7 @@ static void setup_timeout(struct timeval* tv, int timeout_ms)
 static int sock_get_addrinfo(SOCKADDR_IN* addr, const char* host, word16 port)
 {
     int rc;
-#if defined(NUCLEUS)
+#if defined(MQTT_NUCLEUS)
     NU_HOSTENT *hentry;
     INT family;
     CHAR tmp_ip[MAX_ADDRESS_SIZE] = {0};
@@ -219,13 +218,13 @@ static int sock_get_addrinfo(SOCKADDR_IN* addr, const char* host, word16 port)
 
     XMEMSET(addr, 0, sizeof(SOCKADDR_IN));
 
-#if defined(NUCLEUS)
+#if defined(MQTT_NUCLEUS)
     /* Determine the IP address of the foreign server to which to
      * make the connection.
      */
 #if (INCLUDE_IPV6 == NU_TRUE)
     /* Search for a ':' to determine if the address is IPv4 or IPv6. */
-    if (XMEMCHR(host, (int)':', MAX_ADDRESS_SIZE) != NU_NULL) {
+    if (XMEMCHR(host, (int)':', MAX_ADDRESS_SIZE) != 0) {
         family = NU_FAMILY_IP6;
     }
     else
@@ -339,7 +338,7 @@ static void sock_set_nonblocking(SOCKET_T* sockfd)
         PRINTF("ioctlsocket failed!");
 #elif defined(MICROCHIP_MPLAB_HARMONY)
     /* Do nothing */
-#elif defined(NUCLEUS)
+#elif defined(MQTT_NUCLEUS)
     rc = NU_Fcntl(*sockfd, NU_SETFLAG, NU_NO_BLOCK);
     if (rc != NU_SUCCESS) {
         PRINTF("NU_Fcntl set NO_BLOCK failed!");
@@ -360,7 +359,7 @@ static int sock_select(int nfds, fd_set *readfds, fd_set *writefds,
         fd_set *exceptfds, struct timeval *timeout)
 {
     int rc;
-#if defined(NUCLEUS)
+#if defined(MQTT_NUCLEUS)
     UNSIGNED nu_timeout;
 
     if (timeout) {
@@ -406,7 +405,7 @@ static int sock_select(int nfds, fd_set *readfds, fd_set *writefds,
     }
 #else
     rc = select(nfds, readfds, writefds, exceptfds, timeout);
-#endif /* NUCLEUS */
+#endif /* MQTT_NUCLEUS */
     return rc;
 }
 #endif /* !WOLFMQTT_NO_TIMEOUT */
@@ -416,7 +415,7 @@ static int sock_create(SOCKADDR_IN* addr, int type, int protocol)
     int rc;
 
     /* Create socket */
-#if defined(NUCLEUS)
+#if defined(MQTT_NUCLEUS)
     rc = NU_Socket(addr->family, type, protocol);
 #elif defined(MICROCHIP_MPLAB_HARMONY)
     rc = socket(AF_INET, type, IPPROTO_TCP);
@@ -493,7 +492,7 @@ static int NetConnect(void *context, const char* host, word16 port,
                 /* Check for error */
                 getsockopt(sock->fd, SOL_SOCKET, SO_ERROR, &so_error, &len);
                 if (so_error == 0) {
-                    rc = 0; /* Success */
+                    rc = MQTT_CODE_SUCCESS;
                 }
             #endif
         #else
@@ -532,7 +531,7 @@ static int NetWrite(void *context, const byte* buf, int buf_len,
         return MQTT_CODE_ERROR_BAD_ARG;
     }
 
-#ifndef WOLFMQTT_NO_TIMEOUT
+#if !defined(WOLFMQTT_NO_TIMEOUT) && !defined(MQTT_NUCLEUS)
     /* Setup timeout */
     setup_timeout(&tv, timeout_ms);
     setsockopt(sock->fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof(tv));

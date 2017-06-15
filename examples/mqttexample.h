@@ -27,10 +27,9 @@
 #endif
 
 /* Compatibility Options */
-#ifdef NUCLEUS
-    #define NO_MAIN_DRIVER
+#ifdef MQTT_NUCLEUS
+    //#define NO_MAIN_DRIVER
     #define NO_EXIT
-    #define LINE_END	"\r\n"
 #endif
 
 #ifdef NO_EXIT
@@ -153,6 +152,11 @@ word16 mqtt_get_packetid(void);
 #ifdef WOLFMQTT_NONBLOCK
 int mqtt_check_timeout(int rc, word32* start_sec, word32 timeout_sec);
 #endif
+
+#if !defined(NO_MAIN_DRIVER) && defined(MQTT_NUCLEUS)
+int main(int argc, char** argv);
+#endif
+
 
 #ifdef __cplusplus
     } /* extern "C" */
