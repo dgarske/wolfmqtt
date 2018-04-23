@@ -33,6 +33,24 @@
 #endif
 
 /* Private functions */
+#ifdef WOLFMQTT_AUTO_RECONNECT
+/* Default disconnect handler when auto reconnect is enabled */
+static int MqttClient_AutoReconnect(MqttClient* client, int error_code, void* ctx)
+{
+#ifdef WOLFMQTT_DEBUG_CLIENT
+    PRINTF("Auto reconnect (error %d)", error_code);
+#endif
+
+    (void)client;
+    (void)ctx;
+    (void)error_code;
+
+    /* do a reconnect (should be blocking) */
+    return MqttClient_Connect(client, &client->reconnect_msg);
+}
+
+#endif
+
 static int MqttClient_HandlePayload(MqttClient* client, MqttMessage* msg,
     int timeout_ms, void* p_decode, word16* packet_id)
 {
@@ -502,6 +520,10 @@ int MqttClient_Init(MqttClient *client, MqttNet* net,
     client->retain_avail = 1;
 #endif
 
+#ifdef WOLFMQTT_AUTO_RECONNECT
+    MqttClient_SetDisconnectCallback(client, MqttClient_AutoReconnect, NULL);
+#endif
+
     /* Init socket */
     rc = MqttSocket_Init(client, net);
 
@@ -553,6 +575,11 @@ int MqttClient_Connect(MqttClient *client, MqttConnect *connect)
             return rc;
         }
         len = rc;
+
+    #ifdef WOLFMQTT_AUTO_RECONNECT
+        /* capture copy of connect msg for auto-reconnect */
+        XMEMCPY(&client->reconnect_msg, connect, sizeof(MqttConnect));
+    #endif
 
         /* Send connect packet */
         rc = MqttPacket_Write(client, client->tx_buf, len);

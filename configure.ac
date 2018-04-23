@@ -225,6 +225,21 @@ then
 fi
 
 
+# Automatic Reconnect
+AC_ARG_ENABLE([reconnect],
+    [AS_HELP_STRING([--enable-reconnect],[Enable automatic reconnect (default: disabled)])],
+    [ ENABLED_RECONNECT=$enableval ],
+    [ ENABLED_RECONNECT=no ]
+    )
+
+if test "x$ENABLED_RECONNECT" = "xyes"
+then
+    AM_CPPFLAGS="$AM_CPPFLAGS -DWOLFMQTT_AUTO_RECONNECT -DWOLFMQTT_DISCONNECT_CB"
+fi
+
+AM_CONDITIONAL([BUILD_RECONNECT], [test "x$ENABLED_RECONNECT" = "xyes"])
+
+
 
 # HARDEN FLAGS
 AX_HARDEN_CC_COMPILER_FLAGS
@@ -343,4 +358,5 @@ echo "   * Examples:                  $ENABLED_EXAMPLES"
 echo "   * Non-Blocking:              $ENABLED_NONBLOCK"
 echo "   * STDIN Capture:             $ENABLED_STDINCAP"
 echo "   * TLS:                       $ENABLED_TLS"
+echo "   * Automatic Reconnect:       $ENABLED_RECONNECT"
 

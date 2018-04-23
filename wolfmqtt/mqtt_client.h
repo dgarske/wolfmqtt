@@ -95,6 +95,11 @@ typedef struct _MqttSk {
     int len;
 } MqttSk;
 
+/* Disconnect callback required for auto-reconnect feature */
+#if defined(WOLFMQTT_AUTO_RECONNECT) && !defined(WOLFMQTT_DISCONNECT_CB)
+#define WOLFMQTT_DISCONNECT_CB
+#endif
+        
 #ifdef WOLFMQTT_DISCONNECT_CB
     typedef int (*MqttDisconnectCb)(struct _MqttClient* client, int error_code, void* ctx);
 #endif
@@ -137,6 +142,9 @@ typedef struct _MqttClient {
 #ifdef WOLFMQTT_DISCONNECT_CB
     MqttDisconnectCb disconnect_cb;
     void            *disconnect_ctx;
+#endif
+#ifdef WOLFMQTT_AUTO_RECONNECT
+    MqttConnect      reconnect_msg;
 #endif
 #ifdef WOLFMQTT_PROPERTY_CB
     MqttPropertyCb property_cb;
