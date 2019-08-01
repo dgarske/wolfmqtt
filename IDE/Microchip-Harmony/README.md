@@ -18,6 +18,13 @@ This example IDE project is meant to be used from inside the Microchip Harmony d
 ### To add this library to Harmony
 
 * Copy the entire libraries `wolfmqtt` directory into `third_party/tcpip`.
+
+```sh
+export WOLFMQTT_DIR=~/wolfmqtt
+export HARMONY_DIR=~/microchip/harmony/v2_06
+cp -r $(WOLFMQTT_DIR) $(HARMONY_DIR)/third_party/tcpip/wolfmqtt
+```
+
 * Copy `wolfmqtt.hconfig` into `third_party/tcpip/config`.
 * Add the `wolfmqtt.hconfig` include into `tcpip.hconfig`
 * Add the following lines into `wolfssl.h.ftl`:
