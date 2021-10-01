@@ -306,6 +306,17 @@ then
     AM_CFLAGS="$AM_CFLAGS -DWOLFMQTT_MULTITHREAD"
 fi
 
+# Broker
+AC_ARG_ENABLE([broker],
+[AS_HELP_STRING([--enable-broker],[Enable lightweight broker support (default: disabled)])],
+[ ENABLED_BROKER=$enableval ],
+[ ENABLED_BROKER=no ]
+)
+
+if test "x$ENABLED_BROKER" = "xyes"
+then
+AM_CFLAGS="$AM_CFLAGS -DWOLFMQTT_BROKER"
+fi
 
 
 AM_CONDITIONAL([HAVE_LIBWOLFSSL], [test "x$ENABLED_TLS" = "xyes"])
@@ -315,6 +326,7 @@ AM_CONDITIONAL([BUILD_SN], [test "x$ENABLED_SN" = "xyes"])
 AM_CONDITIONAL([BUILD_MQTT5], [test "x$ENABLED_MQTTV50" = "xyes"])
 AM_CONDITIONAL([BUILD_NONBLOCK], [test "x$ENABLED_NONBLOCK" = "xyes"])
 AM_CONDITIONAL([BUILD_MULTITHREAD], [test "x$ENABLED_MULTITHREAD" = "xyes"])
+AM_CONDITIONAL([BUILD_BROKER], [test "x$ENABLED_BROKER" = "xyes"])
 
 
 
