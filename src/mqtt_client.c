@@ -1028,17 +1028,24 @@ wait_again:
     }
 #endif
 
-    if (mms_stat->read == MQTT_MSG_WAIT || rc != MQTT_CODE_CONTINUE) {
-        /* reset state */
+    /* no data read, reset state */
+    if (mms_stat->read == MQTT_MSG_WAIT) {
         mms_stat->read = MQTT_MSG_BEGIN;
-
-    #ifdef WOLFMQTT_MULTITHREAD
-        if (mms_stat->isReadLocked) {
-            mms_stat->isReadLocked = 0;
-            wm_SemUnlock(&client->lockRecv);
-        }
-    #endif
     }
+
+#ifdef WOLFMQTT_NONBLOCK
+    /* if nonblocking and some data has been read, do not release read lock */
+    if (rc == MQTT_CODE_CONTINUE && mms_stat->read > MQTT_MSG_WAIT) {
+        return rc;
+    }
+#endif
+
+#ifdef WOLFMQTT_MULTITHREAD
+    if (mms_stat->isReadLocked) {
+        mms_stat->isReadLocked = 0;
+        wm_SemUnlock(&client->lockRecv);
+    }
+#endif
 
 #ifdef WOLFMQTT_NONBLOCK
     if (rc == MQTT_CODE_CONTINUE) {
@@ -1065,6 +1072,7 @@ wait_again:
 
     if (!waitMatchFound) {
         /* if we get here, then the we are still waiting for a packet */
+        mms_stat->read = MQTT_MSG_BEGIN;
         goto wait_again;
     }
 
