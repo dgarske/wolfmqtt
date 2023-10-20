@@ -45,16 +45,9 @@
 #define MAX_BUFFER_SIZE 1024
 
 /* Total size of test message to build */
-#define TEST_MESSAGE_SIZE 4680
+#define TEST_MESSAGE_SIZE 1048 /* span more than one max packet */
 
 /* Locals */
-static const char testMessageBase[] = {
-    'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
-    'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
-    '0','1','2','3','4','5','6','7','8','9',
-    ' ', '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-','.', '/',
-    ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_','`', '{', '|', '}'
-};
 static char mTestMessage[TEST_MESSAGE_SIZE];
 static int mStopRead = 0;
 static int mNumMsgsRecvd;
@@ -181,11 +174,6 @@ static int mqtt_message_cb(MqttClient *client, MqttMessage *msg,
         /* Print incoming message */
         PRINTF("MQTT Message: Topic %s, Qos %d, Id %d, Len %u, %u, %u",
             buf, msg->qos, msg->packet_id, msg->total_len, msg->buffer_len, msg->buffer_pos);
-
-        /* for test mode: count the number of messages received */
-        if (mqttCtx->test_mode) {
-            mNumMsgsRecvd++;
-        }
     }
 
     /* Print message payload */
@@ -199,6 +187,17 @@ static int mqtt_message_cb(MqttClient *client, MqttMessage *msg,
         msg->buffer_pos, msg->buffer_pos + msg->buffer_len, len, buf);
 
     if (msg_done) {
+        /* for test mode: count the number of messages received */
+        if (mqttCtx->test_mode) {
+            if (msg->buffer_pos + msg->buffer_len ==
+                    (word32)sizeof(mTestMessage) &&
+                XMEMCMP(&mTestMessage[msg->buffer_pos], msg->buffer,
+                    msg->buffer_len) == 0)
+            {
+                mNumMsgsRecvd++;
+            }
+        }
+
         PRINTF("MQTT Message: Done");
     }
     wm_SemUnlock(&mtLock);
@@ -689,16 +688,12 @@ static int unsubscribe_do(MQTTCtx *mqttCtx)
 int multithread_test(MQTTCtx *mqttCtx)
 {
     int rc = 0, i, threadCount = 0;
-    size_t msgSz;
     THREAD_T threadList[NUM_PUB_TASKS+3];
 
     /* Build test message */
-    for (msgSz=0; msgSz<TEST_MESSAGE_SIZE; ) {
-        size_t x = sizeof(testMessageBase);
-        if (msgSz + x > TEST_MESSAGE_SIZE)
-            x = TEST_MESSAGE_SIZE - msgSz;
-        XMEMCPY(&mTestMessage[msgSz], testMessageBase, x);
-        msgSz += x;
+    rc = mqtt_fill_random_hexstr(mTestMessage, (word32)sizeof(mTestMessage));
+    if (rc != 0) {
+        return rc;
     }
 
     rc = multithread_test_init(mqttCtx);

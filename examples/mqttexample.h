@@ -200,6 +200,8 @@ word16 mqtt_get_packetid(void);
 int mqtt_check_timeout(int rc, word32* start_sec, word32 timeout_sec);
 #endif
 
+int mqtt_fill_random_hexstr(char* buf, word32 bufLen);
+
 int mqtt_file_load(const char* filePath, byte** fileBuf, int *fileLen);
 
 #ifdef WOLFSSL_ENCRYPTED_KEYS
