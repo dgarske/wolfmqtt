@@ -1906,7 +1906,7 @@ static int MqttPublishMsg(MqttClient *client, MqttPublish *publish,
         {
             rc = MqttClient_Publish_WritePayload(client, publish, pubCb);
         #ifdef WOLFMQTT_NONBLOCK
-            if (rc == MQTT_CODE_CONTINUE)
+            if (rc == MQTT_CODE_CONTINUE || rc == MQTT_CODE_PUB_CONTINUE)
                 return rc;
         #endif
         #ifdef WOLFMQTT_MULTITHREAD
