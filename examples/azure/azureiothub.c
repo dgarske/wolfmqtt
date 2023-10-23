@@ -659,7 +659,8 @@ exit:
     #ifdef ENABLE_AZUREIOTHUB_EXAMPLE
         do {
             rc = azureiothub_test(&mqttCtx);
-        } while (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE);
+        } while (!mStopRead &&
+            (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE));
 
         mqtt_free_ctx(&mqttCtx);
     #else

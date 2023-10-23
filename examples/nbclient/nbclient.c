@@ -715,7 +715,8 @@ exit:
         #ifdef WOLFSSL_ASYNC_CRYPT
             wolfSSL_AsyncPoll(mqttCtx.client.tls.ssl, WOLF_POLL_FLAG_CHECK_HW);
         #endif
-        } while (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE);
+        } while (!mStopRead &&
+            (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE));
 
         mqtt_free_ctx(&mqttCtx);
 #else
