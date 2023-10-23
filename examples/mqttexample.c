@@ -544,8 +544,9 @@ int mqtt_check_timeout(int rc, word32* start_sec, word32 timeout_sec)
 {
     word32 elapsed_sec;
 
-    /* if start seconds not set or is not continue */
-    if (*start_sec == 0 || rc != MQTT_CODE_CONTINUE) {
+    /* if start seconds not set or is not want read/write */
+    if (*start_sec == 0 ||
+            (rc != MQTT_CODE_WANT_READ && rc != MQTT_CODE_WANT_WRITE)) {
         *start_sec = mqtt_get_timer_seconds();
         return rc;
     }

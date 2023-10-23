@@ -1922,7 +1922,7 @@ static int MqttPacket_HandleNetError(MqttClient *client, int rc)
     (void)client;
 #ifdef WOLFMQTT_DISCONNECT_CB
     if (rc < 0 &&
-        rc != MQTT_CODE_CONTINUE &&
+        rc != MQTT_CODE_WANT_READ &&
         rc != MQTT_CODE_STDIN_WAKE)
     {
         /* don't use return code for now - future use */

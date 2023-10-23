@@ -437,7 +437,7 @@ int main(int argc, char** argv)
 
     do {
         rc = wiot_test(&mqttCtx);
-    } while (rc == MQTT_CODE_CONTINUE);
+    } while (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE);
 
     mqtt_free_ctx(&mqttCtx);
 

@@ -156,7 +156,7 @@ static int NetRead(void *context, byte* buf, int buf_len,
     else if (rc < 0) {
     #ifdef WOLFMQTT_NONBLOCK
         if (rc == -pdFREERTOS_ERRNO_EWOULDBLOCK) {
-            return MQTT_CODE_CONTINUE;
+            return MQTT_CODE_WANT_READ;
         }
     #endif
         PRINTF("NetRead: Error %d", rc);
@@ -185,7 +185,7 @@ static int NetWrite(void *context, const byte* buf, int buf_len, int timeout_ms)
     if (rc < 0) {
     #ifdef WOLFMQTT_NONBLOCK
         if (rc == -pdFREERTOS_ERRNO_EWOULDBLOCK) {
-            return MQTT_CODE_CONTINUE;
+            return MQTT_CODE_WANT_WRITE;
         }
     #endif
         PRINTF("NetWrite: Error %d", rc);
@@ -253,7 +253,7 @@ static int NetConnect(void *context, const char* host, word16 port,
                         *(hostInfo->h_addr_list), sizeof(IPV4_ADDR));
             }
             else {
-                return MQTT_CODE_CONTINUE;
+                return MQTT_CODE_WANT_READ;
             }
 
             /* Create socket */
@@ -285,7 +285,7 @@ exit:
     /* check for error */
     if (rc != 0) {
         if (errno == EINPROGRESS || errno == EWOULDBLOCK) {
-            return MQTT_CODE_CONTINUE;
+            return MQTT_CODE_WANT_READ;
         }
 
         /* Show error */
@@ -309,7 +309,7 @@ static int NetWrite(void *context, const byte* buf, int buf_len,
     if (rc <= 0) {
         /* Check for in progress */
         if (errno == EINPROGRESS || errno == EWOULDBLOCK) {
-            return MQTT_CODE_CONTINUE;
+            return MQTT_CODE_WANT_WRITE;
         }
 
         PRINTF("NetWrite Error: Rc %d, BufLen %d, ErrNo %d", rc, buf_len, errno);
@@ -337,7 +337,7 @@ static int NetRead(void *context, byte* buf, int buf_len,
                    0);
     if (rc < 0) {
         if (errno == EINPROGRESS || errno == EWOULDBLOCK) {
-            return MQTT_CODE_CONTINUE;
+            return MQTT_CODE_WANT_READ;
         }
 
         PRINTF("NetRead Error: Rc %d, BufLen %d, ErrNo %d", rc, buf_len, errno);
@@ -347,7 +347,7 @@ static int NetRead(void *context, byte* buf, int buf_len,
         /* Try and build entire recv buffer before returning success */
         sock->bytes += rc;
         if (sock->bytes < buf_len) {
-            return MQTT_CODE_CONTINUE;
+            return MQTT_CODE_WANT_READ;
         }
         rc = sock->bytes;
         sock->bytes = 0;
@@ -524,7 +524,7 @@ static int NetConnect(void *context, const char* host, word16 port,
                         rc = MQTT_CODE_SUCCESS;
                     }
             #else
-                    rc = MQTT_CODE_CONTINUE;
+                    rc = MQTT_CODE_WANT_READ;
             #endif
                 }
         #endif
@@ -671,7 +671,7 @@ static int NetWrite(void *context, const byte* buf, int buf_len,
         if (so_error == 0) {
     #if defined(USE_WINDOWS_API) && defined(WOLFMQTT_NONBLOCK)
             /* assume non-blocking case */
-            rc = MQTT_CODE_CONTINUE;
+            rc = MQTT_CODE_WANT_WRITE;
     #else
             rc = 0; /* Handle signal */
     #endif
@@ -679,7 +679,7 @@ static int NetWrite(void *context, const byte* buf, int buf_len,
         else {
     #ifdef WOLFMQTT_NONBLOCK
             if (SOCK_EQ_ERROR(so_error)) {
-                return MQTT_CODE_CONTINUE;
+                return MQTT_CODE_WANT_WRITE;
             }
     #endif
             rc = MQTT_CODE_ERROR_NETWORK;
@@ -847,7 +847,7 @@ exit:
         else {
     #ifdef WOLFMQTT_NONBLOCK
             if (SOCK_EQ_ERROR(so_error)) {
-                return MQTT_CODE_CONTINUE;
+                return MQTT_CODE_WANT_READ;
             }
     #endif
             rc = MQTT_CODE_ERROR_NETWORK;
@@ -909,7 +909,7 @@ int MqttClientNet_Init(MqttNet* net, MQTTCtx* mqttCtx)
 
     stat = TCPIP_STACK_Status(sysObj.tcpip);
     if (stat < 0) {
-        return MQTT_CODE_CONTINUE;
+        return MQTT_CODE_WANT_READ;
     }
 
     nNets = TCPIP_STACK_NumberOfNetworksGet();
@@ -917,7 +917,7 @@ int MqttClientNet_Init(MqttNet* net, MQTTCtx* mqttCtx)
         netH = TCPIP_STACK_IndexToNet(i);
         ipAddr.Val = TCPIP_STACK_NetAddress(netH);
         if (ipAddr.v[0] == 0) {
-            return MQTT_CODE_CONTINUE;
+            return MQTT_CODE_WANT_READ;
         }
         if (dwLastIP[i].Val != ipAddr.Val) {
             dwLastIP[i].Val = ipAddr.Val;

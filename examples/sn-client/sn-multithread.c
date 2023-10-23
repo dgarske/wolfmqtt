@@ -172,7 +172,7 @@ static void client_disconnect(MQTTCtx *mqttCtx)
     do {
         /* Disconnect */
         rc = SN_Client_Disconnect_ex(&mqttCtx->client, &disconnect);
-    } while (rc == MQTT_CODE_CONTINUE);
+    } while (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE);
 
     PRINTF("MQTT Disconnect: %s (%d)",
         MqttClient_ReturnCodeToString(rc), rc);
@@ -319,7 +319,7 @@ static int multithread_test_init(MQTTCtx *mqttCtx)
     /* Send Connect and wait for Connect Ack */
     do {
         rc = SN_Client_Connect(&mqttCtx->client, &connect);
-    } while (rc == MQTT_CODE_CONTINUE || rc == MQTT_CODE_STDIN_WAKE);
+    } while (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_STDIN_WAKE);
 
     PRINTF("MQTT-SN Connect return code: %s (%d)",
         MqttClient_ReturnCodeToString(rc), rc);

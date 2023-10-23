@@ -1,9 +1,9 @@
 /*******************************************************************************
   MPLAB Harmony Application Source File
-  
+
   Company:
     Microchip Technology Inc.
-  
+
   File Name:
     app.c
 
@@ -11,8 +11,8 @@
     This file contains the source code for the MPLAB Harmony application.
 
   Description:
-    This file contains the source code for the MPLAB Harmony application.  It 
-    implements the logic of the application's state machine and it may call 
+    This file contains the source code for the MPLAB Harmony application.  It
+    implements the logic of the application's state machine and it may call
     API routines of other MPLAB Harmony modules in the system, such as drivers,
     system services, and middleware.  However, it does not call any of the
     system interfaces (such as the "Initialize" and "Tasks" functions) of any of
@@ -49,13 +49,13 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 // *****************************************************************************
 // *****************************************************************************
-// Section: Included Files 
+// Section: Included Files
 // *****************************************************************************
 // *****************************************************************************
 
 
 #define MICROCHIP_PIC32
-#define PIC32_STARTER_KIT 
+#define PIC32_STARTER_KIT
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,7 +92,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
   Remarks:
     This structure should be initialized by the APP_Initialize function.
-    
+
     Application strings and buffers are be defined outside this structure.
 */
 
@@ -179,7 +179,7 @@ void APP_Tasks ( void )
         case APP_STATE_SERVICE_TASKS:
         {
             int rc = fwclient_test(&mqttCtx);
-            if (rc != MQTT_CODE_CONTINUE) {
+            if (rc != MQTT_CODE_WANT_READ && rc != MQTT_CODE_WANT_WRITE) {
                 /* reset mqttCtx.stat and reconnect/try again */
                 mqttCtx.stat = WMQ_BEGIN;
             }
@@ -187,7 +187,7 @@ void APP_Tasks ( void )
         }
 
         /* TODO: implement your application state machine.*/
-        
+
 
         /* The default state should never be executed. */
         default:
@@ -198,7 +198,7 @@ void APP_Tasks ( void )
     }
 }
 
- 
+
 
 /*******************************************************************************
  End of File

@@ -287,7 +287,7 @@ WOLFMQTT_API int MqttClient_Connect(
                 successively to transmit the full payload.
                 (if QoS > 0)
  *  \note       This function that will wait for MqttNet.read to complete,
-                timeout or MQTT_CODE_CONTINUE if non-blocking.
+                timeout or MQTT_CODE_WANT_READ/MQTT_CODE_WANT_WRITE if non-blocking.
                     If QoS level = 1 then will wait for PUBLISH_ACK.
                     If QoS level = 2 then will wait for PUBLISH_REC then send
                         PUBLISH_REL and wait for PUBLISH_COMP.
@@ -296,7 +296,7 @@ WOLFMQTT_API int MqttClient_Connect(
                             with message data
  *                          Note: MqttPublish and MqttMessage are same
                             structure.
- *  \return     MQTT_CODE_SUCCESS, MQTT_CODE_CONTINUE (for non-blocking) or
+ *  \return     MQTT_CODE_SUCCESS, MQTT_CODE_WANT_READ/MQTT_CODE_WANT_WRITE (for non-blocking) or
                 MQTT_CODE_ERROR_* (see enum MqttPacketResponseCodes)
     \sa         MqttClient_Publish_WriteOnly
     \sa         MqttClient_Publish_ex
@@ -310,7 +310,7 @@ WOLFMQTT_API int MqttClient_Publish(
                 copy the payload data, allowing the use of transmit buffers
                 smaller than the total size of the payload.
  *  \note       This function that will wait for MqttNet.read to complete,
-                timeout or MQTT_CODE_CONTINUE if non-blocking.
+                timeout or MQTT_CODE_WANT_READ/MQTT_CODE_WANT_WRITE if non-blocking.
                     If QoS level = 1 then will wait for PUBLISH_ACK.
                     If QoS level = 2 then will wait for PUBLISH_REC then send
                         PUBLISH_REL and wait for PUBLISH_COMP.
@@ -334,7 +334,7 @@ WOLFMQTT_API int MqttClient_Publish_ex(
                 perform writes and requires another thread to handle the read
                 ACK processing using MqttClient_WaitMessage_ex
  *  \note       This function that will wait for MqttNet.read to complete,
-                timeout or MQTT_CODE_CONTINUE if non-blocking.
+                timeout or MQTT_CODE_WANT_READ/MQTT_CODE_WANT_WRITE if non-blocking.
                     If QoS level = 1 then will wait for PUBLISH_ACK.
                     If QoS level = 2 then will wait for PUBLISH_REC then send
                         PUBLISH_REL and wait for PUBLISH_COMP.
@@ -343,7 +343,7 @@ WOLFMQTT_API int MqttClient_Publish_ex(
                             with message data
  *                          Note: MqttPublish and MqttMessage are same
                             structure.
- *  \return     MQTT_CODE_SUCCESS, MQTT_CODE_CONTINUE (for non-blocking) or
+ *  \return     MQTT_CODE_SUCCESS, MQTT_CODE_WANT_READ/MQTT_CODE_WANT_WRITE (for non-blocking) or
                 MQTT_CODE_ERROR_* (see enum MqttPacketResponseCodes)
     \sa         MqttClient_Publish
     \sa         MqttClient_Publish_ex

@@ -239,7 +239,7 @@ int mqttclient_test(MQTTCtx *mqttCtx)
 
             /* Initialize Network */
             rc = MqttClientNet_Init(&mqttCtx->net, mqttCtx);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
             PRINTF("MQTT Net Init: %s (%d)",
@@ -264,7 +264,7 @@ int mqttclient_test(MQTTCtx *mqttCtx)
                 mqttCtx->tx_buf, MAX_BUFFER_SIZE,
                 mqttCtx->rx_buf, MAX_BUFFER_SIZE,
                 mqttCtx->cmd_timeout_ms);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
             PRINTF("MQTT Init: %s (%d)",
@@ -300,7 +300,7 @@ int mqttclient_test(MQTTCtx *mqttCtx)
             rc = MqttClient_NetConnect(&mqttCtx->client, mqttCtx->host,
                    mqttCtx->port,
                 DEFAULT_CON_TIMEOUT_MS, mqttCtx->use_tls, mqtt_tls_cb);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
             PRINTF("MQTT Socket Connect: %s (%d)",
@@ -346,7 +346,7 @@ int mqttclient_test(MQTTCtx *mqttCtx)
 
             /* Send Connect and wait for Connect Ack */
             rc = MqttClient_Connect(&mqttCtx->client, &mqttCtx->connect);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
             PRINTF("MQTT Connect: Proto (%s), %s (%d)",
@@ -384,7 +384,7 @@ int mqttclient_test(MQTTCtx *mqttCtx)
             mqttCtx->stat = WMQ_SUB;
 
             rc = MqttClient_Subscribe(&mqttCtx->client, &mqttCtx->subscribe);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
 
@@ -429,17 +429,17 @@ int mqttclient_test(MQTTCtx *mqttCtx)
         {
             mqttCtx->stat = WMQ_PUB;
 
-            if ((rc == MQTT_CODE_SUCCESS) || (rc == MQTT_CODE_CONTINUE)) {
+            if ((rc == MQTT_CODE_SUCCESS) || (rc == MQTT_CODE_WANT_READ)) {
                 /* This loop allows payloads larger than the buffer to be sent
                  * by repeatedly calling publish.
                  */
                 do {
                     rc = MqttClient_Publish(&mqttCtx->client,
                                             &mqttCtx->publish);
-                    if (rc == MQTT_CODE_CONTINUE) {
+                    if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                         return rc;
                     }
-                } while (rc == MQTT_CODE_PUB_CONTINUE);
+                } while (rc == MQTT_CODE_WANT_WRITE);
 
                 if ((mqttCtx->pub_file) && (mqttCtx->publish.buffer)) {
                     WOLFMQTT_FREE(mqttCtx->publish.buffer);
@@ -479,7 +479,7 @@ int mqttclient_test(MQTTCtx *mqttCtx)
                     mqttCtx->cmd_timeout_ms/1000);
 
                 /* check return code */
-                if (rc == MQTT_CODE_CONTINUE) {
+                if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                     return rc;
                 }
             #ifdef WOLFMQTT_ENABLE_STDIN_CAP
@@ -499,7 +499,7 @@ int mqttclient_test(MQTTCtx *mqttCtx)
                         mqttCtx->publish.total_len =
                             (int)XSTRLEN((char*)mqttCtx->rx_buf);
 
-                        rc = MQTT_CODE_CONTINUE;
+                        rc = MQTT_CODE_WANT_READ;
                         mqttCtx->stat = WMQ_PUB;
                         return rc;
                     }
@@ -508,7 +508,7 @@ int mqttclient_test(MQTTCtx *mqttCtx)
                 else if (rc == MQTT_CODE_ERROR_TIMEOUT) {
                     /* Need to send keep-alive ping */
                     PRINTF("Keep-alive timeout, sending ping");
-                    rc = MQTT_CODE_CONTINUE;
+                    rc = MQTT_CODE_WANT_READ;
                     mqttCtx->stat = WMQ_PING;
                     return rc;
                 }
@@ -534,14 +534,14 @@ int mqttclient_test(MQTTCtx *mqttCtx)
 
             mqttCtx->start_sec = 0;
             mqttCtx->stat = WMQ_UNSUB;
-            rc = MQTT_CODE_CONTINUE;
+            rc = MQTT_CODE_WANT_READ;
             return rc;
         }
 
         case WMQ_PING:
         {
             rc = MqttClient_Ping_ex(&mqttCtx->client, &mqttCtx->ping);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
             else if (rc != MQTT_CODE_SUCCESS) {
@@ -552,7 +552,7 @@ int mqttclient_test(MQTTCtx *mqttCtx)
 
             /* Go back to waiting for message */
             mqttCtx->stat = WMQ_WAIT_MSG;
-            rc = MQTT_CODE_CONTINUE;
+            rc = MQTT_CODE_WANT_READ;
             return rc;
         }
 
@@ -561,7 +561,7 @@ int mqttclient_test(MQTTCtx *mqttCtx)
             /* Unsubscribe Topics */
             rc = MqttClient_Unsubscribe(&mqttCtx->client,
                 &mqttCtx->unsubscribe);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 /* Track elapsed time with no activity and trigger timeout */
                 return mqtt_check_timeout(rc, &mqttCtx->start_sec,
                     mqttCtx->cmd_timeout_ms/1000);
@@ -582,7 +582,7 @@ int mqttclient_test(MQTTCtx *mqttCtx)
             /* Disconnect */
             rc = MqttClient_Disconnect_ex(&mqttCtx->client,
                    &mqttCtx->disconnect);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
             PRINTF("MQTT Disconnect: %s (%d)",
@@ -598,7 +598,7 @@ int mqttclient_test(MQTTCtx *mqttCtx)
             mqttCtx->stat = WMQ_NET_DISCONNECT;
 
             rc = MqttClient_NetDisconnect(&mqttCtx->client);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
             PRINTF("MQTT Socket Disconnect: %s (%d)",
@@ -621,11 +621,11 @@ int mqttclient_test(MQTTCtx *mqttCtx)
 disconn:
     mqttCtx->stat = WMQ_NET_DISCONNECT;
     mqttCtx->return_code = rc;
-    rc = MQTT_CODE_CONTINUE;
+    rc = MQTT_CODE_WANT_READ;
 
 exit:
 
-    if (rc != MQTT_CODE_CONTINUE) {
+    if (rc != MQTT_CODE_WANT_READ && rc != MQTT_CODE_WANT_WRITE) {
         /* Free resources */
         if (mqttCtx->tx_buf) WOLFMQTT_FREE(mqttCtx->tx_buf);
         if (mqttCtx->rx_buf) WOLFMQTT_FREE(mqttCtx->rx_buf);
@@ -715,7 +715,7 @@ exit:
         #ifdef WOLFSSL_ASYNC_CRYPT
             wolfSSL_AsyncPoll(mqttCtx.client.tls.ssl, WOLF_POLL_FLAG_CHECK_HW);
         #endif
-        } while (rc == MQTT_CODE_CONTINUE);
+        } while (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE);
 
         mqtt_free_ctx(&mqttCtx);
 #else

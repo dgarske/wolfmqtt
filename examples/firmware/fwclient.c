@@ -219,7 +219,7 @@ int fwclient_test(MQTTCtx *mqttCtx)
 
             /* Initialize Network */
             rc = MqttClientNet_Init(&mqttCtx->net, mqttCtx);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
             PRINTF("MQTT Net Init: %s (%d)",
@@ -244,7 +244,7 @@ int fwclient_test(MQTTCtx *mqttCtx)
                 mqttCtx->tx_buf, MAX_BUFFER_SIZE,
                 mqttCtx->rx_buf, MAX_BUFFER_SIZE,
                 mqttCtx->cmd_timeout_ms);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
             PRINTF("MQTT Init: %s (%d)",
@@ -264,7 +264,7 @@ int fwclient_test(MQTTCtx *mqttCtx)
             rc = MqttClient_NetConnect(&mqttCtx->client, mqttCtx->host,
                 mqttCtx->port, DEFAULT_CON_TIMEOUT_MS,
                 mqttCtx->use_tls, mqtt_tls_cb);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
             PRINTF("MQTT Socket Connect: %s (%d)",
@@ -299,7 +299,7 @@ int fwclient_test(MQTTCtx *mqttCtx)
 
             /* Send Connect and wait for Connect Ack */
             rc = MqttClient_Connect(&mqttCtx->client, &mqttCtx->connect);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
             PRINTF("MQTT Connect: Proto (%s), %s (%d)",
@@ -335,7 +335,7 @@ int fwclient_test(MQTTCtx *mqttCtx)
             mqttCtx->stat = WMQ_SUB;
 
             rc = MqttClient_Subscribe(&mqttCtx->client, &mqttCtx->subscribe);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
             PRINTF("MQTT Subscribe: %s (%d)",
@@ -379,7 +379,7 @@ int fwclient_test(MQTTCtx *mqttCtx)
             #endif
 
                 /* check return code */
-                if (rc == MQTT_CODE_CONTINUE) {
+                if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                     return rc;
                 }
                 else if (rc == MQTT_CODE_ERROR_TIMEOUT) {
@@ -387,7 +387,7 @@ int fwclient_test(MQTTCtx *mqttCtx)
                     PRINTF("Keep-alive timeout, sending ping");
 
                     rc = MqttClient_Ping_ex(&mqttCtx->client, &mqttCtx->ping);
-                    if (rc == MQTT_CODE_CONTINUE) {
+                    if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                         return rc;
                     }
                     else if (rc != MQTT_CODE_SUCCESS) {
@@ -420,7 +420,7 @@ int fwclient_test(MQTTCtx *mqttCtx)
         {
             /* Disconnect */
             rc = MqttClient_Disconnect(&mqttCtx->client);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
             PRINTF("MQTT Disconnect: %s (%d)",
@@ -436,7 +436,7 @@ int fwclient_test(MQTTCtx *mqttCtx)
             mqttCtx->stat = WMQ_NET_DISCONNECT;
 
             rc = MqttClient_NetDisconnect(&mqttCtx->client);
-            if (rc == MQTT_CODE_CONTINUE) {
+            if (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE) {
                 return rc;
             }
             PRINTF("MQTT Socket Disconnect: %s (%d)",
@@ -462,11 +462,11 @@ int fwclient_test(MQTTCtx *mqttCtx)
 disconn:
     mqttCtx->stat = WMQ_NET_DISCONNECT;
     mqttCtx->return_code = rc;
-    rc = MQTT_CODE_CONTINUE;
+    rc = MQTT_CODE_WANT_READ;
 
 exit:
 
-    if (rc != MQTT_CODE_CONTINUE) {
+    if (rc != MQTT_CODE_WANT_READ && rc != MQTT_CODE_WANT_WRITE) {
         /* Free resources */
         if (mqttCtx->tx_buf) WOLFMQTT_FREE(mqttCtx->tx_buf);
         if (mqttCtx->rx_buf) WOLFMQTT_FREE(mqttCtx->rx_buf);
@@ -548,7 +548,7 @@ exit:
     #ifdef ENABLE_FIRMWARE_EXAMPLE
         do {
             rc = fwclient_test(&mqttCtx);
-        } while (rc == MQTT_CODE_CONTINUE);
+        } while (rc == MQTT_CODE_WANT_READ || rc == MQTT_CODE_WANT_WRITE);
 
         mqtt_free_ctx(&mqttCtx);
     #else

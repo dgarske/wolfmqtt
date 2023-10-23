@@ -195,11 +195,15 @@ enum MqttPacketResponseCodes {
     MQTT_CODE_ERROR_SYSTEM = -14,
     MQTT_CODE_ERROR_NOT_FOUND = -15,
 
-    MQTT_CODE_CONTINUE = -101,
+    MQTT_CODE_WANT_READ = -101,
     MQTT_CODE_STDIN_WAKE = -102,
-    MQTT_CODE_PUB_CONTINUE = -103
-};
+    MQTT_CODE_WANT_WRITE = -103,
 
+    /* deprecated */
+    MQTT_CODE_CONTINUE  = MQTT_CODE_WANT_READ, /* deprecated and replaced with WANT_READ */
+    MQTT_CODE_PUB_CONTINUE = MQTT_CODE_WANT_WRITE /* deprecated and replaced with WANT_WRITE */
+
+};
 
 /* Standard wrappers */
 #ifndef WOLFMQTT_CUSTOM_STRING

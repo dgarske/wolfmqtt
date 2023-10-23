@@ -176,8 +176,11 @@ typedef struct _MQTTCtx {
     unsigned int dynamicTopic:1;
     unsigned int dynamicClientId:1;
 #ifdef WOLFMQTT_NONBLOCK
-    unsigned int useNonBlockMode:1; /* set to use non-blocking mode.
-        network callbacks can return MQTT_CODE_CONTINUE to indicate "would block" */
+    unsigned int useNonBlockMode:1; /* Set to use non-blocking mode. Network
+                                     * callbacks can return MQTT_CODE_WANT_READ
+                                     * or MQTT_CODE_WANT_WRITE to indicate
+                                     * "would block" and API's need called again
+                                     */
 #endif
 } MQTTCtx;
 
