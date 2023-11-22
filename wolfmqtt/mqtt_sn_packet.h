@@ -144,7 +144,7 @@ typedef struct _SN_GwInfo {
 typedef struct _SN_SearchGw {
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     byte radius; /* Broadcast radius (in hops) */
@@ -168,7 +168,7 @@ typedef struct _SN_ConnectAck {
 typedef struct _SN_WillTopicUpd {
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     byte flags;
@@ -178,7 +178,7 @@ typedef struct _SN_WillTopicUpd {
 typedef struct _SN_WillMsgUpd {
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     char* willMsg;
@@ -202,7 +202,7 @@ typedef union _SN_WillResp {
 typedef struct _SN_Will {
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     byte qos;
@@ -218,7 +218,7 @@ typedef struct _SN_Will {
 typedef struct _SN_Connect {
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     word16 keep_alive_sec;
@@ -248,7 +248,7 @@ typedef struct _SN_RegAck {
 typedef struct _SN_Register {
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     word16 topicId;
@@ -278,7 +278,7 @@ typedef struct _SN_PublishResp {
 typedef struct _SN_Publish {
     MqttMsgStat stat; /* must be first member at top */
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     /* BEGIN: THIS SECTION NEEDS TO MATCH MqttMessage */
@@ -323,7 +323,7 @@ typedef struct _SN_SubAck {
 typedef struct _SN_Subscribe {
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     byte duplicate;
@@ -349,7 +349,7 @@ typedef struct _SN_UnsubscribeAck {
 typedef struct _SN_Unsubscribe {
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     byte duplicate;
@@ -368,7 +368,7 @@ typedef struct _SN_Unsubscribe {
 typedef struct _SN_PingReq {
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     /* clientId is optional and is included by a “sleeping” client when it
@@ -381,7 +381,7 @@ typedef struct _SN_PingReq {
 typedef struct _SN_Disconnect {
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     /* sleepTmr is optional and is included by a “sleeping” client

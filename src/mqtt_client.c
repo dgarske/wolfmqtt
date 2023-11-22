@@ -266,20 +266,36 @@ static void MqttReadStop(MqttClient* client, MqttMsgStat* stat)
 #ifdef WOLFMQTT_MULTITHREAD
 
 /* These RespList functions assume caller has locked client->lockClient mutex */
-int MqttClient_RespList_Add(MqttClient *client,
-    MqttPacketType packet_type, word16 packet_id, MqttPendResp *newResp,
-    void *packet_obj)
+int MqttClient_RespList_Add(MqttClient *client, MqttPendResp_t *p_newResp,
+    MqttPacketType packet_type, word16 packet_id, void *packet_obj)
 {
+    MqttPendResp *newResp;
+#ifndef WOLFMQTT_DYN_PENDRESP
     MqttPendResp *tmpResp;
-
-    if (client == NULL)
+#endif
+    if (client == NULL || p_newResp == NULL) {
         return MQTT_TRACE_ERROR(MQTT_CODE_ERROR_BAD_ARG);
+    }
+
+#ifdef WOLFMQTT_DYN_PENDRESP
+    newResp = *p_newResp;
+    if (newResp == NULL) {
+        newResp = (MqttPendResp*)WOLFMQTT_MALLOC(sizeof(MqttPendResp));
+        if (newResp == NULL) {
+            return MQTT_TRACE_ERROR(MQTT_CODE_ERROR_MEMORY);
+        }
+        *p_newResp = newResp;
+    }
+#else
+    newResp = p_newResp;
+#endif
 
 #ifdef WOLFMQTT_DEBUG_CLIENT
     PRINTF("PendResp Add: %p, Type %s (%d), ID %d",
         newResp, MqttPacket_TypeDesc(packet_type), packet_type, packet_id);
 #endif
 
+#ifndef WOLFMQTT_DYN_PENDRESP
     /* verify newResp is not already in the list */
     for (tmpResp = client->firstPendResp;
          tmpResp != NULL;
@@ -292,6 +308,7 @@ int MqttClient_RespList_Add(MqttClient *client,
             return MQTT_TRACE_ERROR(MQTT_CODE_ERROR_BAD_ARG);
         }
     }
+#endif
 
     /* Initialize new response */
     XMEMSET(newResp, 0, sizeof(MqttPendResp));
@@ -314,12 +331,19 @@ int MqttClient_RespList_Add(MqttClient *client,
     return MQTT_CODE_SUCCESS;
 }
 
-void MqttClient_RespList_Remove(MqttClient *client, MqttPendResp *rmResp)
+void MqttClient_RespList_Remove(MqttClient *client, MqttPendResp_t *p_rmResp)
 {
-    MqttPendResp *tmpResp;
+    MqttPendResp *tmpResp, *rmResp;
 
-    if (client == NULL)
+    if (client == NULL || p_rmResp == NULL) {
         return;
+    }
+
+#ifdef WOLFMQTT_DYN_PENDRESP
+    rmResp = *p_rmResp;
+#else
+    rmResp = p_rmResp;
+#endif
 
 #ifdef WOLFMQTT_DEBUG_CLIENT
     PRINTF("PendResp Remove: %p", rmResp);
@@ -350,6 +374,11 @@ void MqttClient_RespList_Remove(MqttClient *client, MqttPendResp *rmResp)
         if (tmpResp->prev != NULL) {
             tmpResp->prev->next = tmpResp->next;
         }
+
+    #ifdef WOLFMQTT_DYN_PENDRESP
+        WOLFMQTT_FREE(rmResp);
+        *p_rmResp = NULL;
+    #endif
     }
 #ifdef WOLFMQTT_DEBUG_CLIENT
     else {
@@ -935,7 +964,11 @@ static int MqttClient_CheckPendResp(MqttClient *client, byte wait_type,
             #ifdef WOLFMQTT_DEBUG_CLIENT
                 PRINTF("PendResp Check Done %p: Rc %d", pendResp, rc);
             #endif
+            #ifdef WOLFMQTT_DYN_PENDRESP
+                MqttClient_RespList_Remove(client, &pendResp);
+            #else
                 MqttClient_RespList_Remove(client, pendResp);
+            #endif
             }
             else {
                 /* item not done */
@@ -1562,8 +1595,8 @@ int MqttClient_Connect(MqttClient *client, MqttConnect *mc_connect)
         rc = wm_SemLock(&client->lockClient);
         if (rc == 0) {
             /* inform other threads of expected response */
-            rc = MqttClient_RespList_Add(client, MQTT_PACKET_TYPE_CONNECT_ACK,
-                    0, &mc_connect->pendResp, &mc_connect->ack);
+            rc = MqttClient_RespList_Add(client, &mc_connect->pendResp,
+                MQTT_PACKET_TYPE_CONNECT_ACK, 0, &mc_connect->ack);
             wm_SemUnlock(&client->lockClient);
         }
         if (rc != 0) {
@@ -1964,8 +1997,8 @@ static int MqttPublishMsg(MqttClient *client, MqttPublish *publish,
                 rc = wm_SemLock(&client->lockClient);
                 if (rc == 0) {
                     /* inform other threads of expected response */
-                    rc = MqttClient_RespList_Add(client, resp_type,
-                        publish->packet_id, &publish->pendResp, &publish->resp);
+                    rc = MqttClient_RespList_Add(client, &publish->pendResp,
+                        resp_type, publish->packet_id, &publish->resp);
                     wm_SemUnlock(&client->lockClient);
                 }
                 if (rc != 0) {
@@ -2157,8 +2190,9 @@ int MqttClient_Subscribe(MqttClient *client, MqttSubscribe *subscribe)
         rc = wm_SemLock(&client->lockClient);
         if (rc == 0) {
             /* inform other threads of expected response */
-            rc = MqttClient_RespList_Add(client, MQTT_PACKET_TYPE_SUBSCRIBE_ACK,
-                subscribe->packet_id, &subscribe->pendResp, &subscribe->ack);
+            rc = MqttClient_RespList_Add(client, &subscribe->pendResp,
+                MQTT_PACKET_TYPE_SUBSCRIBE_ACK, subscribe->packet_id,
+                &subscribe->ack);
             wm_SemUnlock(&client->lockClient);
         }
         if (rc != 0) {
@@ -2257,9 +2291,9 @@ int MqttClient_Unsubscribe(MqttClient *client, MqttUnsubscribe *unsubscribe)
         rc = wm_SemLock(&client->lockClient);
         if (rc == 0) {
             /* inform other threads of expected response */
-            rc = MqttClient_RespList_Add(client,
+            rc = MqttClient_RespList_Add(client, &unsubscribe->pendResp,
                 MQTT_PACKET_TYPE_UNSUBSCRIBE_ACK, unsubscribe->packet_id,
-                &unsubscribe->pendResp, &unsubscribe->ack);
+                &unsubscribe->ack);
             wm_SemUnlock(&client->lockClient);
         }
         if (rc != 0) {
@@ -2351,8 +2385,8 @@ int MqttClient_Ping_ex(MqttClient *client, MqttPing* ping)
         rc = wm_SemLock(&client->lockClient);
         if (rc == 0) {
             /* inform other threads of expected response */
-            rc = MqttClient_RespList_Add(client, MQTT_PACKET_TYPE_PING_RESP, 0,
-                &ping->pendResp, ping);
+            rc = MqttClient_RespList_Add(client, &ping->pendResp,
+                MQTT_PACKET_TYPE_PING_RESP, 0, ping);
             wm_SemUnlock(&client->lockClient);
         }
         if (rc != 0) {
@@ -2526,8 +2560,8 @@ int MqttClient_Auth(MqttClient *client, MqttAuth* auth)
         rc = wm_SemLock(&client->lockClient);
         if (rc == 0) {
             /* inform other threads of expected response */
-            rc = MqttClient_RespList_Add(client, MQTT_PACKET_TYPE_AUTH, 0,
-                &auth->pendResp, auth);
+            rc = MqttClient_RespList_Add(client, &auth->pendResp,
+                MQTT_PACKET_TYPE_AUTH, 0, auth);
             wm_SemUnlock(&client->lockClient);
         }
         if (rc != 0) {
@@ -2658,7 +2692,11 @@ int MqttClient_CancelMessage(MqttClient *client, MqttObject* msg)
                 tmpResp->packet_type, tmpResp->packet_id,
                 tmpResp->packetProcessing, tmpResp->packetDone);
         #endif
+        #ifdef WOLFMQTT_DYN_PENDRESP
+            MqttClient_RespList_Remove(client, &tmpResp);
+        #else
             MqttClient_RespList_Remove(client, tmpResp);
+        #endif
             break;
         }
     }
@@ -2758,7 +2796,11 @@ int MqttClient_NetDisconnect(MqttClient *client)
             tmpResp->packet_type, tmpResp->packet_id,
             tmpResp->packetProcessing, tmpResp->packetDone);
     #endif
+    #ifdef WOLFMQTT_DYN_PENDRESP
+        MqttClient_RespList_Remove(client, &tmpResp);
+    #else
         MqttClient_RespList_Remove(client, tmpResp);
+    #endif
     }
     wm_SemUnlock(&client->lockClient);
 #endif

@@ -99,10 +99,10 @@ jobs:
     - name: wolfmqtt make check
       run: make check
 
-    - name: configure with Multi-threading and WOLFMQTT_DYN_PROP
+    - name: configure with Multi-threading and WOLFMQTT_DYN_PROP and WOLFMQTT_DYN_PENDRESP
       env:
         WOLFMQTT_NO_EXTERNAL_BROKER_TESTS: 1
-      run: ./configure --enable-mt CFLAGS="-DWOLFMQTT_DYN_PROP"
+      run: ./configure --enable-mt --enable-nonblock CFLAGS="-DWOLFMQTT_TEST_NONBLOCK -DWOLFMQTT_DYN_PROP -DWOLFMQTT_DYN_PENDRESP"
     - name: make
       run: make
     - name: make check

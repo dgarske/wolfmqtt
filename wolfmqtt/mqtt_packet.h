@@ -313,6 +313,12 @@ typedef struct _MqttPendResp {
     struct _MqttPendResp* next;
     struct _MqttPendResp* prev;
 } MqttPendResp;
+
+#ifdef WOLFMQTT_DYN_PENDRESP
+typedef struct _MqttPendResp* MqttPendResp_t;
+#else
+typedef struct _MqttPendResp  MqttPendResp_t;
+#endif
 #endif /* WOLFMQTT_MULTITHREAD */
 
 
@@ -412,7 +418,7 @@ typedef struct _MqttConnect {
     /* stat and pendResp must be first members at top */
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     word16      keep_alive_sec;
@@ -454,7 +460,7 @@ typedef struct _MqttPublishResp {
     /* stat and pendResp must be first members at top */
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
     word16      packet_id;
     byte        packet_type; /* type to send */
@@ -472,7 +478,7 @@ typedef struct _MqttMessage {
     /* stat and pendResp must be first members at top */
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
     word16      packet_id;
     byte        type;
@@ -535,7 +541,7 @@ typedef struct _MqttSubscribe {
     /* stat and pendResp must be first members at top */
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     word16      packet_id;
@@ -570,7 +576,7 @@ typedef struct _MqttUnsubscribe {
     /* stat and pendResp must be first members at top */
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     word16      packet_id;
@@ -592,7 +598,7 @@ typedef struct _MqttPing {
     /* stat and pendResp must be first members at top */
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 } MqttPing;
 
@@ -615,7 +621,7 @@ typedef struct _MqttAuth {
     /* stat and pendResp must be first members at top */
     MqttMsgStat stat;
 #ifdef WOLFMQTT_MULTITHREAD
-    MqttPendResp pendResp;
+    MqttPendResp_t pendResp;
 #endif
 
     byte        reason_code;

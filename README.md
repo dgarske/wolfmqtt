@@ -199,6 +199,9 @@ The multi-threading feature can also be used with the non-blocking socket (--ena
 
 If you are having issues with thread synchronization on Linux consider using not the conditional signal (`WOLFMQTT_NO_COND_SIGNAL`).
 
+If using message pointers from stack in a thread that can be terminated consider using `WOLFMQTT_DYN_PENDRESP` to allocate pending response information from heap. By default it comes from the message object itself.
+
+
 ### Atomic publish and subscribe examples
 In the `examples/pub-sub` folder, there are two simple client examples:
 * mqtt-pub - publishes to a topic

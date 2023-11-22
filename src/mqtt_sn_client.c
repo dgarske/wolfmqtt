@@ -773,9 +773,8 @@ int SN_Client_SearchGW(MqttClient *client, SN_SearchGw *search)
         rc = wm_SemLock(&client->lockClient);
         if (rc == 0) {
             /* inform other threads of expected response */
-            rc = MqttClient_RespList_Add(client,
-                    (MqttPacketType)SN_MSG_TYPE_GWINFO, 0,
-                    &search->pendResp, &search->gwInfo);
+            rc = MqttClient_RespList_Add(client, &search->pendResp,
+                (MqttPacketType)SN_MSG_TYPE_GWINFO, 0, &search->gwInfo);
             wm_SemUnlock(&client->lockClient);
         }
         if (rc != 0) {
@@ -836,9 +835,8 @@ static int SN_WillTopic(MqttClient *client, SN_Will *will)
     rc = wm_SemLock(&client->lockClient);
     if (rc == 0) {
         /* inform other threads of expected response */
-        rc = MqttClient_RespList_Add(client,
-                (MqttPacketType)SN_MSG_TYPE_WILLTOPICREQ, 0,
-                &will->pendResp, &will->resp.topicResp);
+        rc = MqttClient_RespList_Add(client, &will->pendResp,
+            (MqttPacketType)SN_MSG_TYPE_WILLTOPICREQ, 0, &will->resp.topicResp);
         wm_SemUnlock(&client->lockClient);
     }
     if (rc != 0) {
@@ -906,9 +904,8 @@ static int SN_WillMessage(MqttClient *client, SN_Will *will)
     rc = wm_SemLock(&client->lockClient);
     if (rc == 0) {
         /* inform other threads of expected response */
-        rc = MqttClient_RespList_Add(client,
-                (MqttPacketType)SN_MSG_TYPE_WILLMSGREQ, 0,
-                &will->pendResp, &will->resp.msgResp);
+        rc = MqttClient_RespList_Add(client, &will->pendResp,
+            (MqttPacketType)SN_MSG_TYPE_WILLMSGREQ, 0, &will->resp.msgResp);
         wm_SemUnlock(&client->lockClient);
     }
     if (rc != 0) {
@@ -1005,9 +1002,8 @@ int SN_Client_Connect(MqttClient *client, SN_Connect *mc_connect)
         rc = wm_SemLock(&client->lockClient);
         if (rc == 0) {
             /* inform other threads of expected response */
-            rc = MqttClient_RespList_Add(client,
-                    (MqttPacketType)SN_MSG_TYPE_CONNACK, 0,
-                    &mc_connect->pendResp, &mc_connect->ack);
+            rc = MqttClient_RespList_Add(client, &mc_connect->pendResp,
+                (MqttPacketType)SN_MSG_TYPE_CONNACK, 0, &mc_connect->ack);
             wm_SemUnlock(&client->lockClient);
         }
         if (rc != 0) {
@@ -1105,9 +1101,9 @@ int SN_Client_WillTopicUpdate(MqttClient *client, SN_Will *will)
         rc = wm_SemLock(&client->lockClient);
         if (rc == 0) {
             /* inform other threads of expected response */
-            rc = MqttClient_RespList_Add(client,
-                    (MqttPacketType)SN_MSG_TYPE_WILLTOPICRESP,
-                    0, &will->pendResp, &will->resp.topicResp);
+            rc = MqttClient_RespList_Add(client, &will->pendResp,
+                (MqttPacketType)SN_MSG_TYPE_WILLTOPICRESP, 0,
+                &will->resp.topicResp);
             wm_SemUnlock(&client->lockClient);
         }
         if (rc != 0) {
@@ -1191,9 +1187,9 @@ int SN_Client_WillMsgUpdate(MqttClient *client, SN_Will *will)
         rc = wm_SemLock(&client->lockClient);
         if (rc == 0) {
             /* inform other threads of expected response */
-            rc = MqttClient_RespList_Add(client,
-                    (MqttPacketType)SN_MSG_TYPE_WILLMSGRESP,
-                    0, &will->pendResp, &will->resp.msgResp);
+            rc = MqttClient_RespList_Add(client, &will->pendResp,
+                (MqttPacketType)SN_MSG_TYPE_WILLMSGRESP, 0,
+                &will->resp.msgResp);
             wm_SemUnlock(&client->lockClient);
         }
         if (rc != 0) {
@@ -1279,9 +1275,9 @@ int SN_Client_Subscribe(MqttClient *client, SN_Subscribe *subscribe)
         rc = wm_SemLock(&client->lockClient);
         if (rc == 0) {
             /* inform other threads of expected response */
-            rc = MqttClient_RespList_Add(client,
-                    (MqttPacketType)SN_MSG_TYPE_SUBACK, subscribe->packet_id,
-                    &subscribe->pendResp, &subscribe->subAck);
+            rc = MqttClient_RespList_Add(client, &subscribe->pendResp,
+                (MqttPacketType)SN_MSG_TYPE_SUBACK, subscribe->packet_id,
+                &subscribe->subAck);
             wm_SemUnlock(&client->lockClient);
         }
         if (rc != 0) {
@@ -1382,9 +1378,9 @@ int SN_Client_Publish(MqttClient *client, SN_Publish *publish)
                 rc = wm_SemLock(&client->lockClient);
                 if (rc == 0) {
                     /* inform other threads of expected response */
-                    rc = MqttClient_RespList_Add(client,
-                            (MqttPacketType)resp_type, publish->packet_id,
-                            &publish->pendResp, &publish->resp);
+                    rc = MqttClient_RespList_Add(client, &publish->pendResp,
+                        (MqttPacketType)resp_type, publish->packet_id,
+                        &publish->resp);
                     wm_SemUnlock(&client->lockClient);
                 }
                 if (rc != 0) {
@@ -1533,9 +1529,8 @@ int SN_Client_Unsubscribe(MqttClient *client, SN_Unsubscribe *unsubscribe)
         rc = wm_SemLock(&client->lockClient);
         if (rc == 0) {
             /* inform other threads of expected response */
-            rc = MqttClient_RespList_Add(client,
-                    (MqttPacketType)SN_MSG_TYPE_UNSUBACK,
-                    0, &unsubscribe->pendResp, &unsubscribe->ack);
+            rc = MqttClient_RespList_Add(client, &unsubscribe->pendResp,
+                (MqttPacketType)SN_MSG_TYPE_UNSUBACK, 0, &unsubscribe->ack);
             wm_SemUnlock(&client->lockClient);
         }
         if (rc != 0) {
@@ -1620,9 +1615,9 @@ int SN_Client_Register(MqttClient *client, SN_Register *regist)
         rc = wm_SemLock(&client->lockClient);
         if (rc == 0) {
             /* inform other threads of expected response */
-            rc = MqttClient_RespList_Add(client,
-                    (MqttPacketType)SN_MSG_TYPE_REGACK,
-                    regist->packet_id, &regist->pendResp, &regist->regack);
+            rc = MqttClient_RespList_Add(client, &regist->pendResp,
+                (MqttPacketType)SN_MSG_TYPE_REGACK, regist->packet_id,
+                &regist->regack);
             wm_SemUnlock(&client->lockClient);
         }
         if (rc != 0) {
@@ -1714,9 +1709,8 @@ int SN_Client_Ping(MqttClient *client, SN_PingReq *ping)
         rc = wm_SemLock(&client->lockClient);
         if (rc == 0) {
             /* inform other threads of expected response */
-            rc = MqttClient_RespList_Add(client,
-                    (MqttPacketType)SN_MSG_TYPE_PING_RESP, 0,
-                    &ping->pendResp, NULL);
+            rc = MqttClient_RespList_Add(client, &ping->pendResp,
+                (MqttPacketType)SN_MSG_TYPE_PING_RESP, 0, NULL);
             wm_SemUnlock(&client->lockClient);
         }
         if (rc != 0) {
@@ -1806,9 +1800,8 @@ int SN_Client_Disconnect_ex(MqttClient *client, SN_Disconnect *disconnect)
         rc = wm_SemLock(&client->lockClient);
         if (rc == 0) {
             /* inform other threads of expected response */
-            rc = MqttClient_RespList_Add(client,
-                    (MqttPacketType)SN_MSG_TYPE_DISCONNECT, 0,
-                    &disconnect->pendResp, NULL);
+            rc = MqttClient_RespList_Add(client, &disconnect->pendResp,
+                (MqttPacketType)SN_MSG_TYPE_DISCONNECT, 0, NULL);
             wm_SemUnlock(&client->lockClient);
         }
         if (rc != 0) {

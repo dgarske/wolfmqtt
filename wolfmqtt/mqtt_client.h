@@ -583,10 +583,9 @@ WOLFMQTT_API const char* MqttClient_ReturnCodeToString(
 WOLFMQTT_LOCAL int MqttClient_RespList_Find(MqttClient *client,
         MqttPacketType packet_type, word16 packet_id, MqttPendResp **retResp);
 WOLFMQTT_LOCAL void MqttClient_RespList_Remove(MqttClient *client,
-        MqttPendResp *rmResp);
-WOLFMQTT_LOCAL int MqttClient_RespList_Add(MqttClient *client,
-        MqttPacketType packet_type, word16 packet_id, MqttPendResp *newResp,
-        void *packet_obj);
+        MqttPendResp_t *p_rmResp);
+WOLFMQTT_LOCAL int MqttClient_RespList_Add(MqttClient *client, MqttPendResp_t *p_newResp,
+        MqttPacketType packet_type, word16 packet_id, void *packet_obj);
 #endif
 WOLFMQTT_LOCAL int MqttPacket_HandleNetError(MqttClient *client, int rc);
 
